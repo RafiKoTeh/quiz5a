@@ -1,0 +1,134 @@
+from flask import (Flask, render_template, make_response, request,
+                   redirect, flash, url_for, session)
+app = Flask(__name__)
+ 
+import sys,os,random
+ 
+app.secret_key = 'your secret here'
+# replace that with a random key
+app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
+                                          'abcdefghijklmnopqrstuvxyz' +
+                                          '0123456789'))
+                           for i in range(20) ])
+ 
+@app.route('/')
+def index():
+    return redirect( url_for('session_cart') )
+ 
+ 
+@app.route('/session/cart', methods=['GET','POST'])
+def session_cart():
+    # use these defaults if cart isn't in session
+    cart = session.get('cart', {'beer':0, 'wine':0, 'soda':0}) 
+    if (request.method == 'POST' and
+        request.form.get('submit') == 'Show Cart'):
+        flash("Showing your cart's contents")
+        return render_template('cart-template.html',
+                               title='Beverage Orders',
+                               cartContents=True,
+                               cart=cart)
+    elif request.method == 'POST':
+        # ordering something
+        item = request.form.get('itemid')
+        cart[item] += 1
+        flash('Thank you for buying a glass of '+item)
+        session['cart'] = cart # store the updated cart
+    return render_template('cart-template.html',
+                           title='Beverage Orders',
+                           cartContents=False,
+                           cart=cart)
+ 
+@app.route('/iam21/', methods=['POST'])
+def iam21():
+    flash('not yet implemented')
+    return redirect(url_for('session_cart'))
+ 
+@app.route('/clearCart', methods=['POST'])
+def clearCart():
+    flash('not yet implemented')
+    return redirect(url_for('session_cart'))
+     
+if __name__ == '__main__':
+    if len(sys.argv) > 1:
+        # arg, if any, is the desired port number
+        port = int(sys.argv[1])
+        assert(port>1024)
+    else:
+        port = os.getuid()
+    app.debug = True
+    app.run('0.0.0.0',port)
+    
+    
+    {% include "header.html" %}
+    <h1>Cart</h1>
+        {% if session["cart"] is defined %}
+        <table>
+        
+            <tr><th>  </th><th>Name</th><th>Quantity</th><th>Subtotal</th></tr>
+            
+            {% for item in session["cart"].values() %}
+            
+            <tr>
+                <td>
+                    <form action="{{ url_for('delete_entry') }}" method=post class=delete-entry>
+                        <input type="hidden" name="entry_id" value="{{ loop.revindex }}">
+                        <input type="submit" value="Delete" />
+                    </form>
+                </td>
+                <td>{{ item["name"] }}</td>
+                <td>
+                    <form action="update" method="post">
+                        <input type="number" name="qty" min="0" step="1"> 
+                        <input type="submit" name="sbutton">
+                    </form>
+                </td>
+                <td>{{ item["subtotal"] }}</td>
+            </tr>
+            
+            {% endfor %}
+            
+            <tr><td colspan=2><b>Total</b></td><td><b>{{session["cart"].values()|sum(attribute="subtotal")}}</b></td></tr>
+        </table>
+
+        {% else %}
+        <div>Your cart is empty</div>
+        {% endif %}
+{% include "footer.html" %}
+
+users = {
+"chums@example.com":{"password":"Ch@ng3m3!",
+    "first_name":"Matthew",
+    "last_name":"Uy"},
+"joben@example.com":{"password":"Ch@ng3m3!",
+    "first_name":"Joben",
+    "last_name":"Ilagan"},
+"bong@example.com":{"password":"Ch@ng3m3!",
+    "first_name":"Bong",
+    "last_name":"Olpoc"},
+"joaqs@example.com":{"password":"Ch@ng3m3!",
+    "first_name":"Joaqs",
+    "last_name":"Gonzales"},
+"gihoe@example.com":{"password":"Ch@ng3m3!",
+    "first_name":"Gio",
+    "last_name":"Hernandez"},
+"vic@example.com":{"password":"Ch@ng3m3!",
+    "first_name":"Vic",
+    "last_name":"Reventar"},
+"joe@example.com":{"password":"Ch@ng3m3!",
+    "first_name":"Joe",
+    "last_name":"Ilagan"},
+}
+
+branches = {
+    1: {"name":"Katipunan","phonenumber":"09179990000"},
+    2: {"name":"Tomas Morato","phonenumber":"09179990001"},
+    3: {"name":"Eastwood","phonenumber":"09179990002"},
+    4: {"name":"Tiendesitas","phonenumber":"09179990003"},
+    5: {"name":"Arcovia","phonenumber":"09179990004"},
+}
+
+ORDER HISTORY
+@app.route ('/orderhistory')
+def orderhistory()
+    order_list = db.get_orders()
+    return render_template('orderhistory.html', page="Order History", order_list=order_list)

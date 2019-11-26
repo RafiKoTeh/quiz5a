@@ -1,0 +1,106 @@
+Unsaved code
+products = {
+    100: {"name":"Americano","price":125},
+    200: {"name":"Brewed Coffee","price":100},
+    300: {"name":"Cappuccino","price":120},
+    400: {"name":"Espresso","price":110}
+    
+    }
+def get_product(code):
+    return products[code]
+
+def get_products():
+    product_list = []
+    
+    for i,v in products.items():
+        product = v
+    product.setdefault("code",i)
+    product_list.append(product)
+
+    return product_list
+    
+    branches = {
+    1: {"name":"Katipunan"},
+    2: {"name":"Tomas Morato"},
+    3: {"name":"Eastwood"},
+    4: {"name":"Tiendesitas"},
+    5: {"name":"Arcovia"},
+}
+
+def get_branch(code):
+    return branches[name]
+
+def get_branches():
+    branch_list = []
+
+    for i,v in branches.items():
+        branch = v
+    branch.setdefault("code",i)
+    branch_list.append(branch)
+    
+    return branch_list
+
+INDENTS ARE IMPORTANT!!!
+
+@app.route('/branchdetails')
+def branchdetails():
+    name = request.args.get('name', '')
+    branch = db.get_branch(int(code))
+    return render_template('branchdetails.html', branch=branch)
+    
+    
+{% if session["user"] is defined %}
+    <tr><td colspan=2><a href="/addtocart?code={{ code }}">Add to Cart</a></td></tr>
+{% endif %}
+        
+<form>
+    <input type="number" name="cartadditiion" min="0" step="1">
+</form>
+
+#{{item["qty"]}}
+
+
+@app.route("/update", methods=['POST'])
+def update():
+    code = request.args.get('code', '')
+    product = db.get_product('price')
+    item=dict()
+    item["name"] = product["name"]
+    qty=request.form.get("qty") #I got it from a form
+    item["subtotal"] = product["price"]*qty
+    return redirect("/cart")
+    
+{% include "header.html" %}
+    <h1>Cart</h1>
+        {% if session["cart"] is defined %}
+        
+        {% for items in session["cart"].values() %}
+            <form action="/updatecart" method ="POST" id="{{item('code')}}">
+        {% end for %}
+                
+        <table>
+            <tr>
+                <th> Name </th>
+                <th> Quantity </th>
+                <th>&nbsp;</th>
+                <th>&nbsp;</th>
+            </tr>
+            
+            <tr><th>   </th><th>Name</th><th>Quantity</th><th>Subtotal</th></tr>
+            
+            {% for item in session["cart"].values() %}
+                <tr><td><input type="submit" name="Remove" value="Remove"></td>
+                <td>{{ item["name"] }}</td>
+                <td>{{ item["qty"] }}</td>
+                <td>{{ item["subtotal"] }}</td>
+                </tr>
+            {% endfor %}
+            
+            <tr><td colspan=2><b>Total</b></td><td><b>{{session["cart"].values()|sum(attribute="subtotal")}}</b></td></tr>
+        </table>
+    </form>
+        {% else %}
+        <div>Your cart is empty</div>
+        {% endif %}
+{% include "footer.html" %}
+
